@@ -1,78 +1,69 @@
 // ====== NAV SCROLL ======
-const navbar = document.getElementById('navbar');
+var navbar = document.getElementById('navbar');
 window.addEventListener('scroll', function () {
-  if (window.scrollY > 60) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
+  if (window.scrollY > 60) navbar.classList.add('scrolled');
+  else navbar.classList.remove('scrolled');
 }, { passive: true });
 
+// ====== COUNTER ANIMATION ======
+function animateCounter(el, target) {
+  var num = parseInt(target, 10);
+  var start = 0;
+  var duration = 1600;
+  var step = Math.max(1, Math.ceil(num / (duration / 16)));
+  var timer = setInterval(function () {
+    start += step;
+    if (start >= num) { start = num; clearInterval(timer); }
+    el.textContent = start;
+  }, 16);
+}
+
+// Start counters immediately on load (no need to scroll)
+window.addEventListener('load', function () {
+  document.querySelectorAll('.hstat-num').forEach(function (el) {
+    animateCounter(el, el.dataset.target);
+  });
+  // Also trigger typed text
+  startTyped();
+});
+
 // ====== TYPED TEXT ======
-const phrases = [
+var phrases = [
   '10 anos cuidando com dedicação.',
   'Especialista em cuidados avançados.',
   'GTT, SNE e sinais vitais.',
   'Disponível imediatamente.',
   'Cuidado com técnica e humanidade.'
 ];
-let phraseIdx = 0;
-let charIdx = 0;
-let isDeleting = false;
-const typedEl = document.getElementById('typed');
+var phraseIdx = 0, charIdx = 0, isDeleting = false;
 
-function typeLoop() {
+function startTyped() {
+  var typedEl = document.getElementById('typed');
   if (!typedEl) return;
+  typeLoop(typedEl);
+}
+
+function typeLoop(typedEl) {
   var current = phrases[phraseIdx];
   if (!isDeleting) {
     typedEl.textContent = current.slice(0, charIdx + 1);
     charIdx++;
     if (charIdx === current.length) {
       isDeleting = true;
-      setTimeout(typeLoop, 1800);
+      setTimeout(function(){ typeLoop(typedEl); }, 2000);
       return;
     }
-    setTimeout(typeLoop, 55);
+    setTimeout(function(){ typeLoop(typedEl); }, 55);
   } else {
     typedEl.textContent = current.slice(0, charIdx - 1);
     charIdx--;
     if (charIdx === 0) {
       isDeleting = false;
       phraseIdx = (phraseIdx + 1) % phrases.length;
-      setTimeout(typeLoop, 400);
+      setTimeout(function(){ typeLoop(typedEl); }, 400);
       return;
     }
-    setTimeout(typeLoop, 30);
-  }
-}
-setTimeout(typeLoop, 1400);
-
-// ====== COUNTER ANIMATION ======
-function animateCounter(el, target) {
-  var raw = el.dataset.target || '0';
-  var num = parseInt(raw, 10);
-  var start = 0;
-  var duration = 1400;
-  var step = Math.ceil(num / (duration / 16));
-  var timer = setInterval(function () {
-    start += step;
-    if (start >= num) {
-      start = num;
-      clearInterval(timer);
-    }
-    el.textContent = start;
-  }, 16);
-}
-
-var countersStarted = false;
-function startCounters() {
-  if (countersStarted) return;
-  var nums = document.querySelectorAll('.hstat-num');
-  if (nums.length) {
-    countersStarted = true;
-    nums.forEach(function (el) {
-      animateCounter(el, parseInt(el.dataset.target, 10));
-    });
+    setTimeout(function(){ typeLoop(typedEl); }, 28);
   }
 }
 
@@ -84,42 +75,30 @@ var observer = new IntersectionObserver(function (entries) {
       observer.unobserve(entry.target);
     }
   });
-}, { threshold: 0.1 });
+}, { threshold: 0.08 });
 
 document.querySelectorAll('.reveal').forEach(function (el) {
   observer.observe(el);
 });
 
-// ====== COUNTERS trigger on hero visible ======
-var heroObs = new IntersectionObserver(function (entries) {
-  entries.forEach(function (entry) {
-    if (entry.isIntersecting) startCounters();
-  });
-}, { threshold: 0.3 });
-var heroEl = document.querySelector('.hero-stats');
-if (heroEl) heroObs.observe(heroEl);
-
-// ====== STAGGER REVEAL for cards ======
+// ====== STAGGER on cards ======
 document.querySelectorAll('.skills-grid .skill-card').forEach(function (el, i) {
-  el.style.transitionDelay = (i * 0.06) + 's';
+  el.style.transitionDelay = (i * 0.05) + 's';
 });
 document.querySelectorAll('.about-cards .acard').forEach(function (el, i) {
-  el.style.transitionDelay = (i * 0.1) + 's';
+  el.style.transitionDelay = (i * 0.09) + 's';
 });
 document.querySelectorAll('.avail-grid .avail-card').forEach(function (el, i) {
-  el.style.transitionDelay = (i * 0.08) + 's';
+  el.style.transitionDelay = (i * 0.07) + 's';
 });
 document.querySelectorAll('.contact-cards .ccard').forEach(function (el, i) {
-  el.style.transitionDelay = (i * 0.1) + 's';
+  el.style.transitionDelay = (i * 0.09) + 's';
 });
 
-// ====== SMOOTH SCROLL for nav links ======
+// ====== SMOOTH SCROLL ======
 document.querySelectorAll('a[href^="#"]').forEach(function (a) {
   a.addEventListener('click', function (e) {
     var target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
   });
 });
